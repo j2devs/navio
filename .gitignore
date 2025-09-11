@@ -1,0 +1,85 @@
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## JetBrains Rider & IntelliJ IDEA
+.idea/
+*.sln.iml
+
+## User-specific files
+*.userprefs
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+## NuGet
+*.nupkg
+*.snupkg
+# NuGet Symbol Packages
+*.symbols.nupkg
+# NuGet package folders
+**/[Pp]ackages/*
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Logs
+*.log
+logs/
+
+## OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+## Configuration files with secrets
+appsettings.Production.json
+appsettings.Staging.json
+**/appsettings.local.json
+
+## Entity Framework
+**/Migrations/
+
+## Temporary files
+*.tmp
+*.temp
