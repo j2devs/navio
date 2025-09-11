@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.PowerBI.Api" Version="4.22.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Commen\" />
+    <Folder Include="Entities\Enum\" />
+    <Folder Include="Entities\Identity\" />
+  </ItemGroup>
+
+</Project>
