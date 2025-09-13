@@ -1,5 +1,5 @@
 import React from 'react';
-import TripCard from '../components/TripCard.tsx';
+import TripCard from '../components/TripCard';
 import Sidebar from "../components/Sidebar.tsx";
 
 const You: React.FC = () => {

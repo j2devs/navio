@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import DynamicIslandTabs from "./components/DynamicIsland.tsx";
+import DynamicIsland from "./components/DynamicIsland.tsx";
 import You from "./pages/You";
 import Discover from "./pages/Discover";
 
@@ -11,7 +11,7 @@ const App: React.FC = () => {
 
                 <div className="flex-1 ml-72">
                     <header className="p-4 flex items-center justify-center h-20 sticky top-0 z-20">
-                        <DynamicIslandTabs />
+            <DynamicIsland />
                     </header>
 
                     <main className="p-10">

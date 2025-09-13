@@ -1,4 +1,5 @@
 import React from "react";
+import navioLogo from "../images/navio_logo.png";
 
 type Props = {};
 
@@ -6,7 +7,7 @@ const Sidebar: React.FC<Props> = () => {
   return (
     <aside className="w-72 bg-white p-6 border-r border-slate-200 shadow-sm fixed left-0 top-0 h-full z-10">
       <div className="flex items-center mb-8">
-        🧭
+        <img src={navioLogo} alt="Logo" width="50" height="auto"/>
         <span
           className="text-3xl font-bold bg-gradient-to-tr from-violet-500 to-cyan-400 bg-clip-text text-transparent">
           Navio
