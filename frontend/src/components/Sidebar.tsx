@@ -1,9 +1,12 @@
 import React from "react";
 import navioLogo from "../images/navio_logo.png";
 
-type Props = object;
+interface Props {
+  onSettingsClick: () => void;
+  onShareProfileClick: () => void;
+}
 
-const Sidebar: React.FC<Props> = () => {
+const Sidebar: React.FC<Props> = ({ onSettingsClick, onShareProfileClick }) => {
     return (<aside className="w-72 bg-white p-6 border-r border-slate-200 shadow-sm fixed left-0 top-0 h-full z-10">
         <div className="flex items-center mb-8">
             <img src={navioLogo} alt="Logo" width="50" height="auto" />
@@ -44,9 +47,9 @@ const Sidebar: React.FC<Props> = () => {
             {[{ label: "✈️ Trips", count: 0, active: true }, { label: "🌍 Countries", count: 0 }, {
                 label: "📝 My Posts", count: 0
             }, { label: "📤 Share Profile" }, { label: "⚙️ Settings" },].map((item) => (<li key={item.label}>
-                <a
-                    className={`nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${item.active ? "text-violet-500 bg-gradient-to-tr from-violet-500/10 to-cyan-400/10" : "text-slate-500 hover:text-violet-500 hover:bg-gradient-to-tr hover:from-violet-500/10 hover:to-cyan-400/10"}`}
-                    href="#"
+                <button
+                    className={`nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 w-full text-left ${item.active ? "text-violet-500 bg-gradient-to-tr from-violet-500/10 to-cyan-400/10" : "text-slate-500 hover:text-violet-500 hover:bg-gradient-to-tr hover:from-violet-500/10 hover:to-cyan-400/10"}`}
+                    onClick={item.label === "⚙️ Settings" ? onSettingsClick : item.label === "📤 Share Profile" ? onShareProfileClick : undefined}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = "translateX(4px)")}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = "translateX(0)")}
                 >
@@ -55,7 +58,7 @@ const Sidebar: React.FC<Props> = () => {
                         <span className="ml-auto text-xs bg-cyan-500 text-white px-2 py-1 rounded-full">
                             {item.count}
                         </span>)}
-                </a>
+                </button>
             </li>))}
         </ul>
     </aside>);

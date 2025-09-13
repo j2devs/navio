@@ -5,6 +5,8 @@ const DynamicIsland: React.FC = () => {
     const [hovered, setHovered] = useState(false);
     const location = useLocation();
 
+    
+    const isYou = location.pathname === "/" || location.pathname === "/home";
     const isDiscover = location.pathname === "/discover";
 
     return (<div
@@ -20,7 +22,7 @@ const DynamicIsland: React.FC = () => {
             ></div>
             <NavLink
                 to="/home"
-                className={({isActive}) => `flex-1 flex items-center justify-center text-center font-semibold text-sm transition-colors duration-300 z-10 ${isActive ? "text-white" : "text-slate-500"}`}
+                className={({isActive}) => `flex-1 flex items-center justify-center text-center font-semibold text-sm transition-colors duration-300 z-10 ${isActive || isYou ? "text-white" : "text-slate-500"}`}
             >
                 You
             </NavLink>
