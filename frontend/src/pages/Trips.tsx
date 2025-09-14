@@ -1,8 +1,8 @@
 import React from 'react';
+import Sidebar from '../components/Sidebar';
 import TripCard from '../components/TripCard';
-import Sidebar from "../components/Sidebar.tsx";
 
-const You: React.FC = () => {
+const Trips: React.FC = () => {
     return (<>
         <Sidebar/>
         <section id="trips-section" className="grid gap-8">
@@ -11,4 +11,4 @@ const You: React.FC = () => {
     </>);
 };
 
-export default You;
+export default Trips;

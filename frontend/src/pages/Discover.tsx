@@ -4,9 +4,9 @@ import Sidebar from '../components/Sidebar';
 
 const Discover: React.FC = () => {
     return (<>
-            <Sidebar/>
-            <DiscoverGrid/>
-        </>);
+        <Sidebar/>
+        <DiscoverGrid/>
+    </>);
 };
 
 export default Discover;

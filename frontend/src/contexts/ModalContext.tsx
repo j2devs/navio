@@ -49,39 +49,38 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({children}) => {
         setActiveModal(null);
     };
 
-    const value = useMemo(() => ({ activeModal, openModal, closeModal }), [activeModal]);
+    const value = useMemo(() => ({activeModal, openModal, closeModal}), [activeModal]);
 
     return (<ModalContext.Provider value={value}>
-            {children}
+        {children}
 
-            {/* Global Modals */}
-            <SettingsPopup
-                isOpen={activeModal === 'settings'}
-                onClose={closeModal}
-                onProfileSettings={() => openModal('profile')}
-                
-                onLogout={() => openModal('logout')}
-            />
+        {/* Global Modals */}
+        <SettingsPopup
+            isOpen={activeModal === 'settings'}
+            onClose={closeModal}
+            onProfileSettings={() => openModal('profile')}
 
-            <ProfileSettingsModal
-                isOpen={activeModal === 'profile'}
-                onClose={closeModal}
-                onBackToSettings={backToSettings}
-            />
+            onLogout={() => openModal('logout')}
+        />
 
-            
+        <ProfileSettingsModal
+            isOpen={activeModal === 'profile'}
+            onClose={closeModal}
+            onBackToSettings={backToSettings}
+        />
 
-            <LogoutModal
-                isOpen={activeModal === 'logout'}
-                onClose={closeModal}
-                onConfirm={handleLogout}
-                onBackToSettings={backToSettings}
-            />
 
-            <ShareProfileModal
-                isOpen={activeModal === 'share'}
-                onClose={closeModal}
-                username="tester"
-            />
-        </ModalContext.Provider>);
+        <LogoutModal
+            isOpen={activeModal === 'logout'}
+            onClose={closeModal}
+            onConfirm={handleLogout}
+            onBackToSettings={backToSettings}
+        />
+
+        <ShareProfileModal
+            isOpen={activeModal === 'share'}
+            onClose={closeModal}
+            username="tester"
+        />
+    </ModalContext.Provider>);
 }; 
