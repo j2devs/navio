@@ -6,4 +6,4 @@ const DiscoverGrid: React.FC = () => {
     </section>);
 };
 
-export default DiscoverGrid;
+export default React.memo(DiscoverGrid);

@@ -1,21 +1,22 @@
 import React from "react";
 import navioLogo from "../images/navio_logo.png";
-import { useModal } from "../contexts/ModalContext";
+import {useModal} from "../contexts/ModalContext";
 
 const Sidebar: React.FC = () => {
-    const { openModal } = useModal();
+    const {openModal} = useModal();
 
-    return (
-        <aside className="w-72 bg-white p-6 border-r border-slate-200 shadow-sm fixed left-0 top-0 h-full z-10">
+    return (<aside className="w-72 bg-white p-6 border-r border-slate-200 shadow-sm fixed left-0 top-0 h-full z-10">
             <div className="flex items-center mb-8">
-                <img src={navioLogo} alt="Logo" width="50" height="auto" />
-                <span className="text-3xl font-bold bg-gradient-to-tr from-violet-500 to-cyan-400 bg-clip-text text-transparent">
+                <img src={navioLogo} alt="Logo" width="50" height="auto"/>
+                <span
+                    className="text-3xl font-bold bg-gradient-to-tr from-violet-500 to-cyan-400 bg-clip-text text-transparent">
                     Navio
                 </span>
             </div>
 
             <div className="mb-8">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-violet-500 to-cyan-400 flex items-center justify-center text-3xl text-white mb-4 shadow-[0_4px_20px_rgba(139,92,246,0.3)]">
+                <div
+                    className="w-20 h-20 rounded-full bg-gradient-to-tr from-violet-500 to-cyan-400 flex items-center justify-center text-3xl text-white mb-4 shadow-[0_4px_20px_rgba(139,92,246,0.3)]">
                     TU
                 </div>
                 <div className="text-2xl font-bold text-slate-800">Tester User</div>
@@ -25,8 +26,7 @@ const Sidebar: React.FC = () => {
                         <div className="text-center flex-1" key={label}>
                             <div className="text-base font-bold text-slate-800">0</div>
                             <div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div>
-                        </div>
-                    ))}
+                        </div>))}
                 </div>
             </div>
 
@@ -42,20 +42,15 @@ const Sidebar: React.FC = () => {
             </div>
 
             <ul className="space-y-2">
-                {[
-                    { label: "✈️ Trips", count: 0, active: true }, 
-                    { label: "🌍 Countries", count: 0 },
-                    { label: "📝 My Posts", count: 0 },
-                    { label: "📤 Share Profile", action: () => openModal('share') },
-                    { label: "⚙️ Settings", action: () => openModal('settings') }
-                ].map((item) => (
-                    <li key={item.label}>
+                {[{label: "✈️ Trips", count: 0, active: true}, {label: "🌍 Countries", count: 0}, {
+                    label: "📝 My Posts",
+                    count: 0
+                }, {label: "📤 Share Profile", action: () => openModal('share')}, {
+                    label: "⚙️ Settings",
+                    action: () => openModal('settings')
+                }].map((item) => (<li key={item.label}>
                         <button
-                            className={`nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 w-full text-left ${
-                                item.active 
-                                    ? "text-violet-500 bg-gradient-to-tr from-violet-500/10 to-cyan-400/10" 
-                                    : "text-slate-500 hover:text-violet-500 hover:bg-gradient-to-tr hover:from-violet-500/10 hover:to-cyan-400/10"
-                            }`}
+                            className={`nav-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 w-full text-left ${item.active ? "text-violet-500 bg-gradient-to-tr from-violet-500/10 to-cyan-400/10" : "text-slate-500 hover:text-violet-500 hover:bg-gradient-to-tr hover:from-violet-500/10 hover:to-cyan-400/10"}`}
                             onClick={item.action}
                             onMouseEnter={(e) => (e.currentTarget.style.transform = "translateX(4px)")}
                             onMouseLeave={(e) => (e.currentTarget.style.transform = "translateX(0)")}
@@ -64,14 +59,11 @@ const Sidebar: React.FC = () => {
                             {"count" in item && (
                                 <span className="ml-auto text-xs bg-cyan-500 text-white px-2 py-1 rounded-full">
                                     {item.count}
-                                </span>
-                            )}
+                                </span>)}
                         </button>
-                    </li>
-                ))}
+                    </li>))}
             </ul>
-        </aside>
-    );
+        </aside>);
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);

@@ -5,7 +5,7 @@ const DynamicIsland: React.FC = () => {
     const [hovered, setHovered] = useState(false);
     const location = useLocation();
 
-    
+
     const isYou = location.pathname === "/" || location.pathname === "/home";
     const isDiscover = location.pathname === "/discover";
 
@@ -36,4 +36,4 @@ const DynamicIsland: React.FC = () => {
     </div>);
 };
 
-export default DynamicIsland;
+export default React.memo(DynamicIsland);

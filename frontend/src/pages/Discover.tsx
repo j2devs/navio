@@ -3,12 +3,10 @@ import DiscoverGrid from '../components/DiscoverGrid';
 import Sidebar from '../components/Sidebar';
 
 const Discover: React.FC = () => {
-    return (
-        <>
-            <Sidebar />
-            <DiscoverGrid />
-        </>
-    );
+    return (<>
+            <Sidebar/>
+            <DiscoverGrid/>
+        </>);
 };
 
 export default Discover;

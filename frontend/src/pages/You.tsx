@@ -3,14 +3,12 @@ import TripCard from '../components/TripCard';
 import Sidebar from "../components/Sidebar.tsx";
 
 const You: React.FC = () => {
-    return (
-        <>
-            <Sidebar />
+    return (<>
+            <Sidebar/>
             <section id="trips-section" className="grid gap-8">
-                <TripCard />
+                <TripCard/>
             </section>
-        </>
-    );
+        </>);
 };
 
 export default You;
