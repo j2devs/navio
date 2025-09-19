@@ -14,7 +14,7 @@ const WorldMap: React.FC = () => {
         if (map.current) return; // initialize map only once
         map.current = new mapboxgl.Map({
             container: mapContainer.current!,
-            style: 'mapbox://styles/mapbox/streets-v11',
+            style: 'mapbox://styles/nexies-/cmfqtzzcd00ib01qy7izn3zlr',
             center: [lng, lat],
             zoom: zoom,
             projection: {name: 'globe'}
