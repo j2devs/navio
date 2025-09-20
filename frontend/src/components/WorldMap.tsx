@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import mapboxgl from 'mapbox-gl';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoibmV4aWVzLSIsImEiOiJjbWZqeXBjeTUwejVpMmxzYXNhdzhxcjI5In0.xyDCRW5NKC_DLCYP3y7Ilw';
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_KEY;
 
 const WorldMap: React.FC = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
