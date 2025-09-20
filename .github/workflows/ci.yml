@@ -13,22 +13,36 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: "20.x"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: Build
-      run: npm run build
+      - name: Install dependencies
+        run: npm install
 
-    - name: Lint
-      run: npm run lint
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
 
   build-backend:
     runs-on: ubuntu-latest
@@ -36,16 +50,73 @@ jobs:
       run:
         working-directory: ./backend
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up .NET 9.0
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: "9.0.x"
+      - name: Set up .NET 9.0
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
 
-    - name: Restore dependencies
-      run: dotnet restore WebApi.sln
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-    - name: Build
-      run: dotnet build WebApi.sln --configuration Release --no-restore
+      - name: Restore dependencies
+        run: dotnet restore WebApi.sln
+
+      - name: Publish
+        run: dotnet publish WebApi.sln --configuration Release --output ./publish --no-restore
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-publish
+          path: backend/publish/
+
+  build-docker-image:
+    runs-on: ubuntu-latest
+    needs: [ build-frontend, build-backend ]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-publish
+          path: backend/publish/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
