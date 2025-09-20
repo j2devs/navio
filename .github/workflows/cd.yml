@@ -1,0 +1,86 @@
+name: CD
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    environment: dev
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Set up kubeconfig
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DEV }}
+
+      - name: Create secrets
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER_DEV }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_DEV }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_DEV }}
+        run: |
+          kubectl create secret generic app-secrets \
+            --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
+            --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
+            --namespace=navio-dev \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          BACKEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}"
+          FRONTEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}"
+          kustomize build kubernetes/overlays/dev | kubectl apply -f -
+          kubectl set image deployment/navio-backend navio-backend=$BACKEND_IMAGE_TAG -n navio-dev
+          kubectl set image deployment/navio-frontend navio-frontend=$FRONTEND_IMAGE_TAG -n navio-dev
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Set up kubeconfig
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_STAGING }}
+
+      - name: Create secrets
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER_STAGING }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_STAGING }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_STAGING }}
+        run: |
+          kubectl create secret generic app-secrets \
+            --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
+            --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
+            --namespace=navio-staging \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          BACKEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}"
+          FRONTEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}"
+          kustomize build kubernetes/overlays/staging | kubectl apply -f -
+          kubectl set image deployment/navio-backend navio-backend=$BACKEND_IMAGE_TAG -n navio-staging
+          kubectl set image deployment/navio-frontend navio-frontend=$FRONTEND_IMAGE_TAG -n navio-staging
