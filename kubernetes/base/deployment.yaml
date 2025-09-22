@@ -83,3 +83,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5173
+          env:
+            - name: VITE_MAPBOX_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: VITE_MAPBOX_ACCESS_KEY

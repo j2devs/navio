@@ -9,8 +9,8 @@ images:
     newName: navio-backend
     newTag: local
   - name: navio-frontend-image
-    newName: navio-frontend
-    newTag: local
+    newName: navio-frontend-image
+    newTag: v1
 patches:
   - patch: |-
       - op: replace
