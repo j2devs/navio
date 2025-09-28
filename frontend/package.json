@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve -s dist -l 5173"
   },
   "dependencies": {
     "@types/mapbox-gl": "^3.4.1",
@@ -15,7 +16,8 @@
     "mapbox-gl": "^3.15.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.1"
+    "react-router-dom": "^7.9.1",
+    "serve": "^14.2.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
