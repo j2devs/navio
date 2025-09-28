@@ -4,7 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile
       target: backend-runtime
-
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${DATABASE_CONNECTION_STRING}
@@ -13,14 +12,16 @@ services:
       db:
         condition: service_healthy
 
-  nginx:
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
-      target: nginx-runtime
+      target: frontend-nginx
     ports:
       - "80:80"
-    container_name: nginx
+    environment:
+      - VITE_MAPBOX_ACCESS_KEY=${VITE_MAPBOX_ACCESS_KEY}
+    container_name: frontend
     depends_on:
       - backend
 
