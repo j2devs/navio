@@ -1,0 +1,170 @@
+# Bu tek dosya: deployment.yaml
+
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: navio-dev
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+
+---
+
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: navio-dev
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - image: postgres:15-alpine
+          name: postgres
+          envFrom:
+            - configMapRef:
+                name: app-config
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+
+# deployment.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: navio-backend
+  namespace: navio-dev
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: navio-backend
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: navio-frontend
+  namespace: navio-dev
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: navio-frontend
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navio-backend
+  namespace: navio-dev
+spec:
+  selector:
+    matchLabels:
+      app: navio-backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: navio-backend
+    spec:
+      containers:
+        - image: navio-backend:v1.0.0
+          name: navio-backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: app-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: navio-frontend
+  namespace: navio-dev
+spec:
+  selector:
+    matchLabels:
+      app: navio-frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: navio-frontend
+    spec:
+      containers:
+        - image: navio-frontend:v1.0.0
+          name: navio-frontend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
