@@ -28,14 +28,6 @@ RUN npm install
 COPY frontend/. .
 RUN npm run build
 
-FROM node:20 AS frontend-runtime
-WORKDIR /app
-
-COPY --from=frontend-build /app/dist /app/dist
-COPY frontend/package*.json ./
-
-RUN npm install serve
-
-EXPOSE 5173
-
-CMD ["npx", "serve", "-s", "dist", "-l", "5173"]
+FROM nginx:alpine AS nginx-runtime
+COPY --from=frontend-build /app/dist /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
