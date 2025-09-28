@@ -67,18 +67,21 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: dotnet restore WebApi.sln
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish Presentation/WebApi.Api/WebApi.Api.csproj --configuration Release --output ./publish --no-restore
+        run: dotnet publish -c Release -o out
 
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-publish
-          path: backend/publish/
+          path: backend/out/
 
-  build-docker-image:
+  build-docker-images:
     runs-on: ubuntu-latest
     needs: [ build-frontend, build-backend ]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/fix')
@@ -88,18 +91,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-
-      - name: Download backend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-publish
-          path: backend/publish/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -118,7 +109,9 @@ jobs:
           file: ./Dockerfile
           target: backend-runtime
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -127,86 +120,131 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          target: frontend-runtime
+          target: frontend-nginx
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy-dev:
     runs-on: ubuntu-latest
-    needs: build-docker-image
+    needs: build-docker-images
     if: github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/fix')
     environment: dev
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-          sudo mv kustomize /usr/local/bin/
-
-      - name: Set up kubeconfig
+      - name: Set up kubectl
         uses: azure/k8s-set-context@v1
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG_DEV }}
 
-      - name: Create secrets
+      - name: Create namespace
+        run: |
+          kubectl apply -f kubernetes/namespace.yaml
+
+      - name: Create ConfigMap from environment variables
         env:
+          NODE_ENV: production
           POSTGRES_USER: ${{ secrets.POSTGRES_USER_DEV }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_DEV }}
+          POSTGRES_HOST: db
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: navio_db
+          VITE_MAPBOX_ACCESS_KEY: ${{ secrets.VITE_MAPBOX_ACCESS_KEY_DEV }}
         run: |
-          kubectl create secret generic app-secrets \
+          kubectl create configmap app-config \
+            --from-literal=NODE_ENV="${NODE_ENV}" \
             --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --from-literal=POSTGRES_HOST="${POSTGRES_HOST}" \
+            --from-literal=POSTGRES_PORT="${POSTGRES_PORT}" \
+            --from-literal=POSTGRES_DB="${POSTGRES_DB}" \
+            --from-literal=DATABASE_CONNECTION_STRING="Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}" \
+            --from-literal=VITE_MAPBOX_ACCESS_KEY="${VITE_MAPBOX_ACCESS_KEY}" \
             --namespace=navio-dev \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Update deployment with new images
+        run: |
+          # Update image tags in deployment.yaml (temporary)
+          sed -i "s|navio-backend:v1.0.0|ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}|g" kubernetes/deployment.yaml
+          sed -i "s|navio-frontend:v1.0.0|ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}|g" kubernetes/deployment.yaml
+
       - name: Deploy to Kubernetes
         run: |
-          BACKEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}"
-          FRONTEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}"
-          kustomize build kubernetes/overlays/dev | kubectl apply -f -
-          kubectl set image deployment/navio-backend navio-backend=$BACKEND_IMAGE_TAG -n navio-dev
-          kubectl set image deployment/navio-frontend navio-frontend=$FRONTEND_IMAGE_TAG -n navio-dev
+          kubectl apply -f kubernetes/deployment.yaml
+
+      - name: Wait for deployment to complete
+        run: |
+          kubectl rollout status deployment/navio-backend -n navio-dev --timeout=300s
+          kubectl rollout status deployment/navio-frontend -n navio-dev --timeout=300s
+          kubectl rollout status deployment/postgres -n navio-dev --timeout=300s
 
   deploy-staging:
     runs-on: ubuntu-latest
-    needs: build-docker-image
+    needs: build-docker-images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-          sudo mv kustomize /usr/local/bin/
-
-      - name: Set up kubeconfig
+      - name: Set up kubectl
         uses: azure/k8s-set-context@v1
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG_STAGING }}
 
-      - name: Create secrets
+      - name: Create namespace
+        run: |
+          # Create staging namespace if it doesn't exist
+          kubectl create namespace navio-staging --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create ConfigMap from environment variables
         env:
+          NODE_ENV: production
           POSTGRES_USER: ${{ secrets.POSTGRES_USER_STAGING }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_STAGING }}
+          POSTGRES_HOST: db
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: navio_db
+          VITE_MAPBOX_ACCESS_KEY: ${{ secrets.VITE_MAPBOX_ACCESS_KEY_STAGING }}
         run: |
-          kubectl create secret generic app-secrets \
+          kubectl create configmap app-config \
+            --from-literal=NODE_ENV="${NODE_ENV}" \
             --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
+            --from-literal=POSTGRES_HOST="${POSTGRES_HOST}" \
+            --from-literal=POSTGRES_PORT="${POSTGRES_PORT}" \
+            --from-literal=POSTGRES_DB="${POSTGRES_DB}" \
+            --from-literal=DATABASE_CONNECTION_STRING="Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}" \
+            --from-literal=VITE_MAPBOX_ACCESS_KEY="${VITE_MAPBOX_ACCESS_KEY}" \
             --namespace=navio-staging \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Deploy to Kubernetes
+      - name: Update deployment for staging
         run: |
-          BACKEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-backend:${{ github.ref_name }}-${{ github.sha }}"
-          FRONTEND_IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/navio-frontend:${{ github.ref_name }}-${{ github.sha }}"
-          kustomize build kubernetes/overlays/staging | kubectl apply -f -
-          kubectl set image deployment/navio-backend navio-backend=$BACKEND_IMAGE_TAG -n navio-staging
-          kubectl set image deployment/navio-frontend navio-frontend=$FRONTEND_IMAGE_TAG -n navio-staging
+          # Copy deployment file and update for staging
+          cp kubernetes/deployment.yaml staging-deployment.yaml
+          
+          # Update namespace to staging
+          sed -i 's/navio-dev/navio-staging/g' staging-deployment.yaml
+          
+          # Update image tags to use main branch images
+          sed -i "s|navio-backend:v1.0.0|ghcr.io/${{ github.repository_owner }}/navio-backend:main|g" staging-deployment.yaml
+          sed -i "s|navio-frontend:v1.0.0|ghcr.io/${{ github.repository_owner }}/navio-frontend:main|g" staging-deployment.yaml
+
+      - name: Deploy to staging
+        run: |
+          kubectl apply -f staging-deployment.yaml
+
+      - name: Wait for deployment to complete
+        run: |
+          kubectl rollout status deployment/navio-backend -n navio-staging --timeout=300s
+          kubectl rollout status deployment/navio-frontend -n navio-staging --timeout=300s
+          kubectl rollout status deployment/postgres -n navio-staging --timeout=300s
