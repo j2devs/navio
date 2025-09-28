@@ -157,12 +157,10 @@ jobs:
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER_DEV }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_DEV }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_DEV }}
         run: |
           kubectl create secret generic app-secrets \
             --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
-            --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
             --namespace=navio-dev \
             --dry-run=client -o yaml | kubectl apply -f -
 
@@ -198,12 +196,10 @@ jobs:
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER_STAGING }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_STAGING }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_STAGING }}
         run: |
           kubectl create secret generic app-secrets \
             --from-literal=POSTGRES_USER="${POSTGRES_USER}" \
             --from-literal=POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
-            --from-literal=OPENAI_API_KEY="${OPENAI_API_KEY}" \
             --namespace=navio-staging \
             --dry-run=client -o yaml | kubectl apply -f -
 

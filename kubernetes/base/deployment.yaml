@@ -42,11 +42,7 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_PASSWORD
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: OPENAI_API_KEY
+
 
 ---
 
