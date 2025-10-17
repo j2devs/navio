@@ -1,4 +1,34 @@
-# Bu tek dosya: deployment.yaml
+# PersistentVolumeClaim for PostgreSQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: navio-dev
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: hostpath
+
+---
+
+# PersistentVolumeClaim for RabbitMQ
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+  namespace: navio-dev
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: hostpath
+
+---
 
 # PostgreSQL Service
 apiVersion: v1
@@ -12,6 +42,27 @@ spec:
       targetPort: 5432
   selector:
     app: postgres
+  clusterIP: None
+
+---
+
+# RabbitMQ Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: navio-dev
+spec:
+  ports:
+    - port: 5672
+      targetPort: 5672
+      name: amqp
+    - port: 15672
+      targetPort: 15672
+      name: management
+  selector:
+    app: rabbitmq
+  clusterIP: None
 
 ---
 
@@ -26,6 +77,8 @@ spec:
     matchLabels:
       app: postgres
   replicas: 1
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -34,11 +87,30 @@ spec:
       containers:
         - image: postgres:15-alpine
           name: postgres
-          envFrom:
-            - configMapRef:
-                name: app-config
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_DB
+                  optional: true
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
           resources:
             requests:
               cpu: "100m"
@@ -46,109 +118,273 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
 
 ---
 
-# deployment.yaml
+# RabbitMQ Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: navio-dev
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - image: rabbitmq:3.13-management-alpine
+          name: rabbitmq
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SPRING_RABBITMQ_USERNAME
+                  optional: true
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SPRING_RABBITMQ_PASSWORD
+                  optional: true
+          ports:
+            - containerPort: 5672
+              name: amqp
+            - containerPort: 15672
+              name: management
+          volumeMounts:
+            - name: rabbitmq-storage
+              mountPath: /var/lib/rabbitmq
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - ping
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: rabbitmq-storage
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
+
+---
+
+# Backend Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: navio-backend
+  name: backend
   namespace: navio-dev
 spec:
+  type: ClusterIP
   ports:
     - port: 8080
       targetPort: 8080
+      name: http
   selector:
-    app: navio-backend
+    app: backend
 
 ---
 
+# Frontend Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: navio-frontend
+  name: frontend
   namespace: navio-dev
 spec:
   type: LoadBalancer
   ports:
     - port: 80
       targetPort: 80
+      name: http
   selector:
-    app: navio-frontend
+    app: frontend
 
 ---
 
+# Backend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: navio-backend
+  name: backend
   namespace: navio-dev
 spec:
   selector:
     matchLabels:
-      app: navio-backend
+      app: backend
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
-        app: navio-backend
+        app: backend
     spec:
       containers:
-        - image: navio-backend:v1.0.0
-          name: navio-backend
+        - image: navio-backend:latest
+          name: backend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-          envFrom:
-            - configMapRef:
-                name: app-config
+              name: http
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: POSTGRES_DB
+                  optional: true
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://db:5432/$(POSTGRES_DB)"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "$(POSTGRES_USER)"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "$(POSTGRES_PASSWORD)"
+            - name: SPRING_RABBITMQ_HOST
+              value: "rabbitmq"
+            - name: SPRING_RABBITMQ_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SPRING_RABBITMQ_PORT
+                  optional: true
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SPRING_RABBITMQ_USERNAME
+                  optional: true
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: SPRING_RABBITMQ_PASSWORD
+                  optional: true
           resources:
             requests:
               cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "250m"
               memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           livenessProbe:
             httpGet:
-              path: /
+              path: /actuator/health/liveness
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /
+              path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
 
 ---
 
+# Frontend Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: navio-frontend
+  name: frontend
   namespace: navio-dev
 spec:
   selector:
     matchLabels:
-      app: navio-frontend
+      app: frontend
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
-        app: navio-frontend
+        app: frontend
     spec:
       containers:
-        - image: navio-frontend:v1.0.0
-          name: navio-frontend
+        - image: navio-frontend:latest
+          name: frontend
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+              name: http
           env:
-            - name: NODE_ENV
-              value: "production"
+            - name: VITE_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: VITE_API_URL
+                  optional: true
+            - name: VITE_MAPBOX_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: VITE_MAPBOX_ACCESS_KEY
+                  optional: true
           resources:
             requests:
               cpu: "100m"
@@ -162,9 +398,11 @@ spec:
               port: 80
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
               path: /
               port: 80
             initialDelaySeconds: 5
             periodSeconds: 5
+            timeoutSeconds: 3

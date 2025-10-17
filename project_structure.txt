@@ -1,0 +1,82 @@
+navio/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── backend/
+│   ├── .mvn/
+│   │   └── wrapper/
+│   │       └── maven-wrapper.properties
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   │   └── com/
+│   │   │   │       └── navio/
+│   │   │   │           ├── core/
+│   │   │   │           │   ├── application/
+│   │   │   │           │   └── domain/
+│   │   │   │           ├── infrastructure/
+│   │   │   │           ├── presentation/
+│   │   │   │           └── BackendApplication.java
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   │       └── java/
+│   │           └── com/
+│   │               └── navio/
+│   ├── .gitattributes
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   └── pom.xml
+├── docker/
+│   ├── .dockerignore
+│   ├── docker-compose.yml
+│   └── Dockerfile
+├── frontend/
+│   ├── public/
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── DiscoverGrid.tsx
+│   │   │   ├── DynamicIsland.tsx
+│   │   │   ├── LogoutModal.tsx
+│   │   │   ├── NotificationButton.tsx
+│   │   │   ├── ProfileSettingsModal.tsx
+│   │   │   ├── SettingsPopup.tsx
+│   │   │   ├── ShareProfileModal.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── TripCard.tsx
+│   │   │   └── WorldMap.tsx
+│   │   ├── contexts/
+│   │   │   └── ModalContext.tsx
+│   │   ├── images/
+│   │   │   └── navio_logo.png
+│   │   ├── pages/
+│   │   │   ├── Countries.tsx
+│   │   │   ├── Discover.tsx
+│   │   │   ├── MyPosts.tsx
+│   │   │   ├── Trips.tsx
+│   │   │   └── You.tsx
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   ├── main.tsx
+│   │   └── vite-env.d.ts
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+├── kubernetes/
+│   ├── deployment.yaml
+│   └── namespace.yaml
+├── nginx/
+│   └── nginx.conf
+├── scripts/
+│   └── deploy.sh
+├── .env.example
+├── .gitignore
+├── LICENSE
+├── project_structure.txt
+└── README.md
