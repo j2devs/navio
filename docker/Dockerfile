@@ -6,6 +6,8 @@ COPY backend/pom.xml .
 COPY backend/mvnw .
 COPY backend/mvnw.cmd .
 COPY backend/.mvn ./.mvn
+# Make mvnw executable
+RUN chmod +x ./mvnw
 COPY backend/src ./src
 # Build the application
 RUN ./mvnw package -DskipTests
