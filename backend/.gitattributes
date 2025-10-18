@@ -1,2 +1,10 @@
-/mvnw text eol=lf
+# Maven wrapper with Unix line endings
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
+
+# Shell scripts with Unix line endings
+*.sh text eol=lf
+
+# Windows batch files with Windows line endings
+*.bat text eol=crlf
 *.cmd text eol=crlf
