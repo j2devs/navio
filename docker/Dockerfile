@@ -27,6 +27,10 @@ COPY frontend/package*.json ./
 RUN npm install
 
 COPY frontend/. .
+
+ARG VITE_MAPBOX_ACCESS_KEY
+ENV VITE_MAPBOX_ACCESS_KEY=$VITE_MAPBOX_ACCESS_KEY
+
 RUN npm run build
 
 # Frontend Runtime Stage (Nginx)

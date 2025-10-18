@@ -35,6 +35,8 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       target: frontend-nginx
+      args:
+        - VITE_MAPBOX_ACCESS_KEY=${VITE_MAPBOX_ACCESS_KEY}
     image: navio-frontend:latest
     ports:
       - "80:80"
