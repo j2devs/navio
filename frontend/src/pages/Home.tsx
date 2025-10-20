@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import navioLogo from "../images/navio_logo.png";
 import './Home.css';
+import AIAssistant from '../components/AIAssistant';
 
 const Home: React.FC = () => {
     const [showAbout, setShowAbout] = useState(false);
@@ -17,6 +18,7 @@ const Home: React.FC = () => {
 
     return (
         <div className="home-container">
+            <AIAssistant />
             <header className="home-header">
                 <div className="home-logo">
                     <img src={navioLogo} alt="Logo" width="50" height="auto" />
