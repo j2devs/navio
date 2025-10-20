@@ -1,0 +1,396 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.login-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Sol Panel - Login */
+.login-panel {
+    width: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 2rem;
+    position: relative;
+    overflow-y: auto;
+}
+
+.login-content {
+    width: 100%;
+    max-width: 450px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Header */
+.login-header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.logo {
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 0.5rem;
+    /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
+    background: linear-gradient(to top right, rgb(139, 92, 246), rgb(34, 211, 238));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.welcome-subtitle {
+    font-size: 1rem;
+    color: #718096;
+    font-weight: 400;
+}
+
+/* Login Card */
+.login-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12);
+}
+
+.card-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.card-description {
+    font-size: 0.9rem;
+    color: #718096;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Google Button */
+.google-login-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.google-login-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(66, 133, 244, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.google-login-btn:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.google-login-btn:hover {
+    border-color: #4285f4;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(66, 133, 244, 0.2);
+}
+
+.google-login-btn:active {
+    transform: translateY(0);
+}
+
+.google-icon {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+.google-login-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Terms */
+.terms-text {
+    font-size: 0.75rem;
+    color: #a0aec0;
+    text-align: center;
+    margin-top: 1.5rem;
+    line-height: 1.6;
+}
+
+.terms-link {
+    color: #4285f4;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.terms-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+/* Footer */
+.login-footer {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.login-footer p {
+    font-size: 0.85rem;
+    color: #81878d;
+}
+
+/* Sağ Panel - Background */
+.background-panel {
+    width: 60%;
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2821&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.background-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+            rgba(102, 126, 234, 0.6) 0%,
+            rgba(118, 75, 162, 0.5) 50%,
+            rgba(237, 100, 166, 0.4) 100%);
+    backdrop-filter: blur(2px);
+}
+
+.background-content {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem;
+    color: white;
+    z-index: 1;
+}
+
+.bg-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 1s ease-out;
+    line-height: 1.2;
+    margin-top: -80px;
+
+
+
+}
+
+.bg-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    line-height: 1.6;
+    animation: slideInRight 1.2s ease-out;
+    max-width: 600px;
+    margin-top: 30px;
+}
+
+.bg-description {
+    font-size: 1.2rem;
+    opacity: 0.95;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideInRight 1.4s ease-out;
+    max-width: 600px;
+
+
+}
+
+/* Stats Container */
+.stats-container {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 3rem;
+    animation: fadeIn 2s ease-out;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .login-panel {
+        width: 50%;
+    }
+
+    .background-panel {
+        width: 50%;
+    }
+
+    .bg-title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+    }
+
+    .login-panel {
+        width: 100%;
+        height: 100vh;
+    }
+
+    .background-panel {
+        display: none;
+    }
+
+    .login-content {
+        max-width: 400px;
+    }
+}
+
+/* Scrollbar Styling */
+.login-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.login-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.login-panel::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+}
+
+.login-panel::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+
+
+.title-with-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navio-logo {
+    width: 50px;
+    height: auto;
+}

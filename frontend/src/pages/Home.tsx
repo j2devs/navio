@@ -31,7 +31,7 @@ const Home: React.FC = () => {
                     <Link to="/pricing">Pricing</Link>
                     <Link to="/about">About Us</Link>
                     <Link to="/login" className="login-button">Login</Link>
-                    <Link to="/register" className="register-button">Register</Link>
+                    <Link to="/login" className="register-button">Register</Link>
                 </nav>
             </header>
             <main className="home-main">

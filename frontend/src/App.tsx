@@ -5,6 +5,7 @@ import NotificationButton from "./components/NotificationButton";
 import { ModalProvider } from "./contexts/ModalContext";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
+import LoginPage from "./pages/Login";
 
 const You = React.lazy(() => import("./pages/You"));
 const Discover = React.lazy(() => import("./pages/Discover"));
@@ -35,6 +36,7 @@ export default function App() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 font-sans">
             <Routes>
                 {/* redirect landing to a real username (replace with logged-in user) */}
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/:username" element={<Shell />}>
